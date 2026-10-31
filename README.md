@@ -123,7 +123,7 @@ Le dépôt final doit contenir au minimum :
 │   ├── gold/
 │   └── checks/
 ├── docs/
-│   ├── data_dictionary.md
+│   ├── dictionnaire_donnees.md
 │   └── architecture.md
 ├── reports/
 │   └── TD1_ADJAKOSSA_AKODEKOU.pdf

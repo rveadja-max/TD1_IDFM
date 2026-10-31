@@ -1,9 +1,10 @@
-google-cloud-storage
-google-cloud-bigquery
-pandas
-pyarrow
-db-dtypes
-requests
-python-dotenv
-jupyter
-pytest
+# Versions figées pour une installation reproductible (testées le 2026-10-31, Python 3.12)
+google-cloud-storage==3.17.1
+google-cloud-bigquery==3.47.0
+pandas==3.1.0
+pyarrow==26.0.0
+db-dtypes==1.9.0
+requests==2.34.2
+python-dotenv==1.2.4
+jupyter==1.1.1
+pytest==9.2.0
