@@ -1,7 +1,6 @@
 # Environnement
 .venv/
 .env
-.env.example
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
@@ -18,4 +17,3 @@ data/
 # Fichiers locaux de travail (non versionnés)
 .claude/
 CLAUDE.md
-pytest.ini
