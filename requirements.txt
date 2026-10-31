@@ -1,0 +1,9 @@
+google-cloud-storage
+google-cloud-bigquery
+pandas
+pyarrow
+db-dtypes
+requests
+python-dotenv
+jupyter
+pytest
