@@ -5,6 +5,8 @@ pandas==3.1.0
 pyarrow==26.0.0
 db-dtypes==1.9.0
 requests==2.34.2
+openpyxl==3.1.5
+pyproj==3.8.0
 python-dotenv==1.2.4
 jupyter==1.1.1
 pytest==9.2.0
