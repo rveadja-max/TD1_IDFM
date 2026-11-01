@@ -17,3 +17,10 @@ data/
 # Fichiers locaux de travail (non versionnés)
 .claude/
 CLAUDE.md
+
+# Exemple de rapport d'un autre projet (gabarit), conservé en local
+reports/rapport/_exemple_gabarit_IVE/
+# Fichiers intermédiaires du rendu Quarto
+reports/rapport/*.tex
+!reports/rapport/template.tex
+reports/rapport/*_files/
