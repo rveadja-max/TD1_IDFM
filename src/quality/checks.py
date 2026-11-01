@@ -57,5 +57,7 @@ def empreintes(config: Config) -> pd.DataFrame:
 def comparer_empreintes(avant: pd.DataFrame, apres: pd.DataFrame) -> pd.DataFrame:
     m = avant.merge(apres, on=["couche", "table_bq"], suffixes=("_exec1", "_exec2"))
     m["lignes_identiques"] = m["lignes_exec1"] == m["lignes_exec2"]
-    m["contenu_identique"] = m["empreinte_exec1"] == m["empreinte_exec2"]
+    # Table vide : empreinte NULL des deux côtés, contenu identique par définition.
+    vides = m["empreinte_exec1"].isna() & m["empreinte_exec2"].isna() & (m["lignes_exec1"] == 0) & (m["lignes_exec2"] == 0)
+    m["contenu_identique"] = vides | (m["empreinte_exec1"] == m["empreinte_exec2"]).fillna(False).astype(bool)
     return m

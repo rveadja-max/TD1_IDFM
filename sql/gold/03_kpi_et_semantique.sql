@@ -72,7 +72,8 @@ AS SELECT * FROM UNNEST([
   ('code_stif_trns / code_stif_res', 'Codes à lire ensemble ; ne pas en déduire une ligne commerciale ni un exploitant non confirmé.', 'limite'),
   ('tm_c / rr_mm', 'Météo de la station éligible la plus proche du centre de la zone ; repli sur la moyenne IDF si la station n\'a pas de mesure. Voir source_meteo.', 'définition'),
   ('rr_mm', 'Cumul de J 06 h UTC à J+1 06 h UTC, décalé par rapport au jour d\'exploitation IDFM.', 'limite'),
-  ('dim_date', 'Les vacances scolaires et les grèves ne sont pas renseignées : aucune source fournie.', 'limite')
+  ('dim_date', 'Les vacances scolaires et les grèves ne sont pas renseignées : aucune source fournie.', 'limite'),
+  ('categorie_titre', 'Rupture de classement en 2025 T1 : Forfaits courts passe d\'environ 1 % à 10-19 % du volume et Autres titres de 9 % à moins de 3 %. Cause non documentée : ne pas comparer ces deux catégories de part et d\'autre de janvier 2025.', 'limite')
 ]);
 
 -- Catalogue des colonnes Gold avec leurs descriptions, lu depuis les métadonnées BigQuery.

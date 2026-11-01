@@ -51,8 +51,9 @@ CREATE OR REPLACE TABLE `{projet}.{silver}.meteo_quotidienne` (
   tm_retenu FLOAT64 OPTIONS(description = "TM si code qualité 0, 1 ou 9, sinon NULL"),
   fichier_source STRING NOT NULL OPTIONS(description = "Objet Bronze d'origine")
 )
-PARTITION BY DATE_TRUNC(jour, MONTH)
-CLUSTER BY num_poste
+-- Pas de partitionnement : la table pèse moins de 1 Go (partitions de moins de 1 Mo,
+-- loin des ~10 Go recommandés) ; le clustering suffit à l'élagage des blocs.
+CLUSTER BY num_poste, jour
 OPTIONS(description = "Météo quotidienne, grain station × jour, années {annee_debut} à {annee_fin}")
 AS
 WITH t AS (

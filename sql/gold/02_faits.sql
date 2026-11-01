@@ -15,7 +15,9 @@ CREATE OR REPLACE TABLE `{projet}.{gold}.fait_validations_jour` (
   nb_vald_plancher_5 INT64 NOT NULL OPTIONS(description = "Part de nb_vald issue de valeurs « 5 ou moins »"),
   zone_referencee BOOL NOT NULL OPTIONS(description = "zdc_id trouvé dans le référentiel actuel des zones")
 )
-PARTITION BY jour CLUSTER BY zdc_id, categorie_titre
+-- Pas de partitionnement : la table pèse moins de 1 Go (partitions de moins de 1 Mo,
+-- loin des ~10 Go recommandés) ; le clustering suffit à l'élagage des blocs.
+CLUSTER BY jour, zdc_id, categorie_titre
 OPTIONS(description = "Validations quotidiennes par zone de correspondance et catégorie de titre harmonisée")
 AS
 SELECT
@@ -33,7 +35,9 @@ GROUP BY v.jour, v.id_zdc, v.categorie_titre, v.niveau_correspondance;
 -- J-7 désigne bien la date d'il y a sept jours même en cas de jour manquant.
 -- Moyennes glissantes sur les jours PRÉCÉDENTS uniquement (pas de fuite d'information).
 CREATE OR REPLACE TABLE `{projet}.{gold}.ds_zone_jour`
-PARTITION BY DATE_TRUNC(jour, MONTH) CLUSTER BY zdc_id
+-- Pas de partitionnement : la table pèse moins de 1 Go (partitions de moins de 1 Mo,
+-- loin des ~10 Go recommandés) ; le clustering suffit à l'élagage des blocs.
+CLUSTER BY zdc_id, jour
 OPTIONS(description = "Variables Data Scientist : validations zone × jour, calendrier, météo de la station de référence, retards et moyennes glissantes")
 AS
 WITH zones AS (
@@ -54,8 +58,8 @@ SELECT
   g.nb_vald,
   g.nb_vald_imagine_r,
   l1.nb_vald AS nb_vald_j1, l7.nb_vald AS nb_vald_j7, l364.nb_vald AS nb_vald_j364,
-  ROUND(AVG(g.nb_vald) OVER w7, 1) AS moy_glissante_7j,
-  ROUND(AVG(g.nb_vald) OVER w28, 1) AS moy_glissante_28j,
+  CAST(ROUND(AVG(CAST(g.nb_vald AS NUMERIC)) OVER w7, 1) AS FLOAT64) AS moy_glissante_7j,
+  CAST(ROUND(AVG(CAST(g.nb_vald AS NUMERIC)) OVER w28, 1) AS FLOAT64) AS moy_glissante_28j,
   COUNT(g.nb_vald) OVER w28 AS nb_jours_observes_28j,
   dz.num_poste_ref, dz.distance_station_km,
   COALESCE(ms.tm_c, mi.tm_moyen_c) AS tm_c,

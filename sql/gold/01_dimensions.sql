@@ -70,7 +70,9 @@ CREATE OR REPLACE TABLE `{projet}.{gold}.meteo_station_jour` (
   tn_c FLOAT64, tx_c FLOAT64, tm_c FLOAT64 OPTIONS(description = "Moyenne des températures horaires, °C"),
   jour_pluvieux BOOL OPTIONS(description = "rr_mm >= 1 mm ; NULL si RR indisponible")
 )
-PARTITION BY DATE_TRUNC(jour, MONTH) CLUSTER BY num_poste
+-- Pas de partitionnement : la table pèse moins de 1 Go (partitions de moins de 1 Mo,
+-- loin des ~10 Go recommandés) ; le clustering suffit à l'élagage des blocs.
+CLUSTER BY num_poste, jour
 OPTIONS(description = "Météo quotidienne des stations éligibles (TM et RR disponibles >= 95 % des jours)")
 AS
 SELECT m.num_poste, m.jour, m.nom_station, m.rr_retenu, m.tn_retenu, m.tx_retenu, m.tm_retenu,
@@ -87,7 +89,11 @@ CREATE OR REPLACE TABLE `{projet}.{gold}.meteo_jour_idf` (
 )
 OPTIONS(description = "Météo moyenne d'Île-de-France par jour (moyenne simple des stations éligibles)")
 AS
-SELECT jour, COUNTIF(tm_c IS NOT NULL), ROUND(AVG(rr_mm), 2), ROUND(AVG(tm_c), 2), ROUND(AVG(tn_c), 2),
-       ROUND(AVG(tx_c), 2), ROUND(AVG(IF(jour_pluvieux, 1, 0)), 3)
+-- Moyennes calculées en NUMERIC (arithmétique décimale exacte) : en FLOAT64, le résultat
+-- dépend de l'ordre d'addition, non garanti par BigQuery, ce qui casserait la rejouabilité.
+SELECT jour, COUNTIF(tm_c IS NOT NULL),
+       CAST(ROUND(AVG(CAST(rr_mm AS NUMERIC)), 2) AS FLOAT64), CAST(ROUND(AVG(CAST(tm_c AS NUMERIC)), 2) AS FLOAT64),
+       CAST(ROUND(AVG(CAST(tn_c AS NUMERIC)), 2) AS FLOAT64), CAST(ROUND(AVG(CAST(tx_c AS NUMERIC)), 2) AS FLOAT64),
+       CAST(ROUND(AVG(IF(jour_pluvieux, NUMERIC '1', NUMERIC '0')), 3) AS FLOAT64)
 FROM `{projet}.{gold}.meteo_station_jour`
 GROUP BY jour;
