@@ -6,7 +6,10 @@ Règles appliquées :
   et son empreinte SHA-256 est recalculée puis comparée à celle enregistrée ;
 - chaque objet porte sa provenance (URL, paramètres, horodatage UTC, taille, SHA-256)
   dans ses métadonnées GCS et dans un manifeste JSON voisin (`<objet>.manifest.json`) ;
-- une actualisation se fait en changeant SNAPSHOT_DATE, ce qui crée de nouveaux chemins.
+- une actualisation se fait en changeant SNAPSHOT_DATE, ce qui crée de nouveaux chemins ;
+- chaque objet Bronze et son manifeste portent un hold temporaire GCS : tant qu'il est
+  posé, GCS refuse toute suppression ou tout remplacement, quel que soit l'outil utilisé.
+  Levée volontaire : gcloud storage objects update <objet> --no-temporary-hold.
 """
 
 from __future__ import annotations
@@ -55,6 +58,7 @@ class EntreeManifeste:
     statut_http: int
     snapshot: str
     statut_depot: str = ""  # "créé" ou "réutilisé" (rempli à chaque exécution)
+    hold_temporaire: str = ""  # "posé" ou "déjà posé" (rempli à chaque exécution)
 
 
 def _metadonnees(e: EntreeManifeste) -> dict[str, str]:
@@ -73,6 +77,16 @@ def _creer_sans_ecraser(blob: storage.Blob, contenu: bytes, type_contenu: str) -
     except PreconditionFailed as e:
         # Un autre processus a créé l'objet entre la vérification et l'envoi.
         raise ErreurBronze(f"{blob.name} existe déjà : dépôt refusé pour ne pas l'écraser") from e
+
+
+def proteger(blob: storage.Blob) -> str:
+    """Pose un hold temporaire sur l'objet s'il n'en a pas (opération idempotente)."""
+    blob.reload()
+    if blob.temporary_hold:
+        return "déjà posé"
+    blob.temporary_hold = True
+    blob.patch()
+    return "posé"
 
 
 def lire_manifeste(bucket: storage.Bucket, chemin: str) -> EntreeManifeste:
@@ -99,6 +113,8 @@ def deposer(bucket: storage.Bucket, source: str, snapshot: str, chemin: str,
                     f"objet {empreinte[:12]}…"
                 )
         entree.statut_depot = "réutilisé"
+        entree.hold_temporaire = proteger(blob)
+        proteger(bucket.blob(chemin + ".manifest.json"))
         return entree
 
     rep = telecharger()
@@ -113,11 +129,13 @@ def deposer(bucket: storage.Bucket, source: str, snapshot: str, chemin: str,
     blob.metadata = _metadonnees(entree)
     _creer_sans_ecraser(blob, rep.contenu, rep.type_contenu)
 
-    manifeste = {k: v for k, v in asdict(entree).items() if k != "statut_depot"}
-    _creer_sans_ecraser(bucket.blob(chemin + ".manifest.json"),
-                        json.dumps(manifeste, ensure_ascii=False, indent=2).encode(),
+    manifeste = {k: v for k, v in asdict(entree).items() if k not in ("statut_depot", "hold_temporaire")}
+    blob_manifeste = bucket.blob(chemin + ".manifest.json")
+    _creer_sans_ecraser(blob_manifeste, json.dumps(manifeste, ensure_ascii=False, indent=2).encode(),
                         "application/json")
     entree.statut_depot = "créé"
+    entree.hold_temporaire = proteger(blob)
+    proteger(blob_manifeste)
     return entree
 
 
