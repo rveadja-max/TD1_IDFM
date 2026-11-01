@@ -43,6 +43,8 @@ Puis initialiser et s'authentifier :
 ```bash
 gcloud init
 gcloud auth application-default login
+# Le projet de facturation des identifiants locaux doit être un projet facturé
+gcloud auth application-default set-quota-project VOTRE_PROJECT_ID
 gcloud config set project VOTRE_PROJECT_ID
 gcloud config get-value project
 gcloud auth list
@@ -142,7 +144,21 @@ Lancer Jupyter :
 jupyter lab
 ```
 
-Exécuter le notebook `notebooks/TD1_ADJAKOSSA_AKODEKOU.ipynb` de haut en bas. Le notebook doit piloter le traitement et afficher les résultats des contrôles et des deux exemples d'exploitation obligatoires.
+Exécuter le notebook `notebooks/TD1_ADJAKOSSA_AKODEKOU.ipynb` de haut en bas.
+
+En ligne de commande, avec les résultats enregistrés dans le notebook :
+
+```bash
+jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=3600 notebooks/TD1_ADJAKOSSA_AKODEKOU.ipynb
+```
+
+Le notebook exécute deux fois le pipeline complet (environ 10 minutes par exécution) pour démontrer la rejouabilité.
+
+Tests unitaires (sans réseau ni GCP) : `python -m pytest`.
+
+Rapport : `python reports/rapport/outils/figures.py && cd reports/rapport && quarto render TD1_ADJAKOSSA_AKODEKOU.qmd --to pdf` (Quarto et TinyTeX requis).
+
+Le notebook doit piloter le traitement et afficher les résultats des contrôles et des deux exemples d'exploitation obligatoires.
 
 ## 6. Règles de traitement à respecter
 
