@@ -118,8 +118,9 @@ CREATE OR REPLACE TABLE `{projet}.{silver}.validations` (
   fichier_source STRING NOT NULL OPTIONS(description = "Fichier de l'archive Bronze d'origine"),
   ligne_source INT64 NOT NULL OPTIONS(description = "Numéro de ligne dans ce fichier ; (fichier_source, ligne_source) est la clé technique")
 )
-PARTITION BY jour
-CLUSTER BY id_zdc, categorie_titre
+-- Pas de partitionnement : la table pèse moins de 1 Go (partitions de moins de 1 Mo,
+-- loin des ~10 Go recommandés) ; le clustering suffit à l'élagage des blocs.
+CLUSTER BY jour, id_zdc, categorie_titre
 OPTIONS(description = "Validations quotidiennes du réseau ferré IDFM ; grain publié jour × transporteur × réseau × arrêt × catégorie, voir contrôles V04")
 AS
 SELECT
