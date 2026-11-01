@@ -379,26 +379,29 @@ vérifié ensuite par trois relances successives identiques.
 `ds_zone_jour` compte 819 808 lignes : 748 zones × 1 096 jours, dont 97,03 % de jours observés.
 Pour chaque zone et chaque jour, il fournit la cible, le calendrier, la météo de la station de
 référence et les variables retardées. Pour illustrer leur usage, l'écart relatif à la moyenne
-glissante sur 28 jours a été calculé pour les jours ouvrés (zones d'au moins 500 validations par
-jour en moyenne) : +17,58 % les jours secs (305 772 zone-jours) et +19,30 % les jours pluvieux
-(RR ≥ 1 mm, 132 240 zone-jours). L'écart est positif dans les deux cas parce que la moyenne
-glissante inclut les fins de semaine. La différence entre jours secs et pluvieux est descriptive :
-elle ne tient compte ni de la saison ni du jour de la semaine et ne constitue pas un effet causal.
+glissante sur 28 jours a été calculé pour les jours ouvrés des zones d'au moins 500 validations par
+jour en moyenne, en distinguant jours secs et pluvieux (RR ≥ 1 mm). L'écart est positif dans tous les
+cas, car la moyenne glissante inclut les fins de semaine. Surtout, **son sens change selon l'année** :
+en 2023, les jours secs dépassent les jours pluvieux (+19,31 % contre +16,73 %), alors qu'en 2024
+(+16,60 % contre +21,28 %) et en 2025 (+16,96 % contre +19,27 %) c'est l'inverse. Ce calcul
+descriptif ne tient compte ni de la saison ni du jour de la semaine ; il ne permet aucune
+conclusion sur l'effet de la pluie, et c'est précisément le rôle du modèle que ces variables
+alimenteront.
 
 ## Data Analyst : indicateurs
 
-| Année | Validations | Moyenne / jour | Samedi | Dimanche | Férié |
-|---|---:|---:|---:|---:|---:|
-| 2023 | 1 726 555 186 | 4 730 288 | 66,9 | 45,3 | 45,6 |
-| 2024 | 1 905 998 830 | 5 207 647 | 69,6 | 48,4 | 46,1 |
-| 2025 | 2 157 659 651 | 5 911 396 | 73,9 | 52,2 | 52,0 |
+| Année | Jour ouvré moyen | Samedi | Dimanche | Férié |
+|---|---:|---:|---:|---:|
+| 2023 | 5 504 554 | 66,9 | 45,3 | 45,6 |
+| 2024 | 5 994 436 | 69,6 | 48,4 | 46,1 |
+| 2025 | 6 710 338 | 73,9 | 52,2 | 52,0 |
 
-: Volume annuel et indice des types de jour (base 100 = jour ouvré moyen de l'année) {#tbl-kpi}
+: Validations d'un jour ouvré moyen et indice des autres types de jour (base 100 = jour ouvré moyen de l'année) {#tbl-kpi}
 
 ![Validations quotidiennes du réseau ferré selon le type de jour](figures/validations_jour.png){#fig-jour width=100%}
 
 Les fins de semaine et les jours fériés se rapprochent du jour ouvré d'une année sur l'autre
-(@tbl-kpi). La hausse du volume annuel (+25 % entre 2023 et 2025) doit être lue avec
+(@tbl-kpi). La hausse du jour ouvré moyen (+21,9 % entre 2023 et 2025) doit être lue avec
 prudence : le nombre d'arrêts publiés varie aussi (781 en 2023, 808 en 2025), et la part due à la
 fréquentation et celle due au périmètre de collecte ne sont pas séparables avec ces seules
 données. En 2025, les cinq premières zones sont Gare Saint-Lazare (82,6 millions de validations),
