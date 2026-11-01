@@ -16,11 +16,21 @@ from src.collect.http import ErreurCollecte, Reponse
 class FauxBlob:
     def __init__(self, bucket, nom):
         self.bucket, self.name, self.metadata = bucket, nom, None
+        self.temporary_hold = None
+
+    def reload(self):
+        self.temporary_hold = self.name in self.bucket.holds
+
+    def patch(self):
+        if self.temporary_hold:
+            self.bucket.holds.add(self.name)
 
     def exists(self):
         return self.name in self.bucket.objets
 
     def upload_from_string(self, contenu, content_type=None, if_generation_match=None):
+        if self.name in self.bucket.holds:
+            raise PermissionError("objet sous hold temporaire")
         if if_generation_match == 0 and self.exists():
             raise PreconditionFailed("existe")
         self.bucket.objets[self.name] = contenu if isinstance(contenu, bytes) else contenu.encode()
@@ -31,7 +41,7 @@ class FauxBlob:
 
 class FauxBucket:
     def __init__(self):
-        self.objets = {}
+        self.objets, self.holds = {}, set()
 
     def blob(self, nom):
         return FauxBlob(self, nom)
@@ -109,3 +119,20 @@ def test_verifier_gzip_et_json():
     assert validation.verifier_json_feries(b'{"2023-01-01": "1er janvier"}', 2023)
     with pytest.raises(ErreurCollecte, match="hors"):
         validation.verifier_json_feries(b'{"2024-01-01": "1er janvier"}', 2023)
+
+
+def test_hold_temporaire_pose_puis_reconnu():
+    b = FauxBucket()
+    e = deposer(b, "validations", "2026-10-31", CHEMIN, lambda: reponse())
+    assert e.hold_temporaire == "posé"
+    assert b.holds == {CHEMIN, CHEMIN + ".manifest.json"}
+    assert "hold_temporaire" not in json.loads(b.objets[CHEMIN + ".manifest.json"])
+    assert deposer(b, "validations", "2026-10-31", CHEMIN, lambda: reponse()).hold_temporaire == "déjà posé"
+
+
+def test_hold_pose_sur_objet_existant_sans_hold():
+    b = FauxBucket()
+    deposer(b, "validations", "2026-10-31", CHEMIN, lambda: reponse())
+    b.holds.clear()  # objet déposé avant l'ajout des holds
+    assert deposer(b, "validations", "2026-10-31", CHEMIN, lambda: reponse()).hold_temporaire == "posé"
+    assert CHEMIN in b.holds
