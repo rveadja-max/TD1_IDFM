@@ -1,0 +1,172 @@
+% =============================================================================
+% Template Pandoc LaTeX pour la classe memoirerecherche
+% Utilisé par bookdown::pdf_book via rapport.Rmd
+% =============================================================================
+
+% Pré-déclarer l'option [table] pour xcolor AVANT le chargement de la classe.
+% memoirerecherche.cls fait \RequirePackage[table]{xcolor} ; si kableExtra
+% (ou un autre paquet) tente ensuite \usepackage{xcolor}, LaTeX peut
+% signaler un « Option clash for package xcolor ». La ligne suivante
+% garantit la compatibilité dans tous les cas.
+\PassOptionsToPackage{table}{xcolor}
+
+\documentclass[$if(fontsize)$$fontsize$$else$11pt$endif$,a4paper]{$documentclass$}
+
+% --- Géométrie ----------------------------------------------------------------
+$if(geometry)$
+\usepackage[$for(geometry)$$geometry$$sep$,$endfor$]{geometry}
+$endif$
+
+% --- Encodage et polices (XeLaTeX) --------------------------------------------
+\usepackage{fontspec}
+\defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+
+% --- Langue -------------------------------------------------------------------
+\usepackage[french]{babel}
+\usepackage{csquotes}
+
+% --- Mathématiques ------------------------------------------------------------
+\usepackage{amsmath,amssymb}
+
+% --- Tableaux et flottants ----------------------------------------------------
+% Note : graphicx, xcolor, colortbl, hyperref, caption déjà chargés par memoirerecherche.cls
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}   % Requis par Pandoc ≥ 3.x pour \real{} dans les largeurs de colonnes
+\usepackage{multirow}
+\usepackage{float}
+
+% --- Graphiques (maxwidth/maxheight pour Pandoc) -------------------------------
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+
+% --- Listes -------------------------------------------------------------------
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% --- Configuration hyperref (package déjà chargé par la classe) ---------------
+\hypersetup{
+  $if(title)$pdftitle={$title$},$endif$
+  colorlinks=true,
+  linkcolor=urcabrown,
+  citecolor=urcabrown,
+  urlcolor=urcalightbrown,
+  breaklinks=true
+}
+\urlstyle{same}
+
+% --- En-têtes / pieds de page -------------------------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\leftmark}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Bibliographie (biblatex) -------------------------------------------------
+$if(biblatex)$
+\usepackage[$if(biblio-style)$style=$biblio-style$,$endif$$for(biblatexoptions)$$biblatexoptions$$sep$,$endfor$]{biblatex}
+$for(bibliography)$
+\addbibresource{$bibliography$}
+$endfor$
+$endif$
+
+% --- Comptage automatique des références bibliographiques ---------------------
+% Le compteur citnum (défini dans memoirerecherche.cls) est incrémenté pour
+% chaque entrée imprimée dans la bibliographie ; \total{citnum} sur la page
+% de titre affichera la valeur finale (disponible dès le second passage LaTeX).
+\newcounter{citnum}
+\AtEveryBibitem{\stepcounter{citnum}}
+
+% --- Coloration syntaxique Pandoc ---------------------------------------------
+% Pré-définir l'environnement Shaded (requis par les macros de coloration
+% Pandoc qui utilisent \renewenvironment) et la couleur shadecolor.
+\usepackage{tcolorbox}
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+$if(highlighting-macros)$
+$highlighting-macros$
+$endif$
+
+% --- Header-includes depuis le YAML -------------------------------------------
+$for(header-includes)$
+$header-includes$
+$endfor$
+
+% --- Variables personnalisées → commandes memoirerecherche.cls ----------------
+$if(diplome)$\diplome{$diplome$}$endif$
+$if(module)$\module{$module$}$endif$
+$if(enseig)$\enseig{$enseig$}$endif$
+$if(evaluation)$\evaluation{$evaluation$}$endif$
+$if(coefficient)$\coefficient{$coefficient$}$endif$
+$if(anac)$\anac{$anac$}$endif$
+
+% Résumé
+$if(abstract)$\resume{$abstract$}$else$\resume{}$endif$
+
+% Mots-clés
+$if(keywords)$\keywords{$for(keywords)$$keywords$$sep$, $endfor$}$else$\keywords{}$endif$
+
+% Dépôt Git et base de données
+$if(git)$\gitrepo{$git$}$else$\gitrepo{}$endif$
+$if(database)$\database{$database$}$else$\database{}$endif$
+
+% Logo de la page de titre
+\logo{logoSESGURCA.jpg}
+
+% Métriques de la page de titre — comptage automatique
+% Les compteurs figure, table et citnum sont gérés automatiquement par
+% totcount (voir memoirerecherche.cls). Les lignes ci-dessous ne sont
+% conservées que pour ne pas casser un éventuel code qui référencerait
+% \@totfig, \@tottab, etc.
+\totfig{--}\tottab{--}\totref{--}\tottheo{0}
+
+% --- Titre, auteur, date ------------------------------------------------------
+\title{$title$}
+% N.B. : ne PAS utiliser \and ici — la classe memoirerecherche.cls affiche
+% \@author dans un minipage/tabular ; or, \and est défini par article.cls
+% comme \end{tabular}\begin{tabular}, ce qui casse l'imbrication de tables
+% du \maketitle de la classe et provoque « ! Missing } inserted. ».
+\author{$for(author)$$author$$sep$, $endfor$}
+\date{$date$}
+
+% =============================================================================
+\begin{document}
+
+\maketitle
+\newpage
+
+% --- Table des matières -------------------------------------------------------
+$if(toc)$
+{
+\setcounter{tocdepth}{$if(toc-depth)$$toc-depth$$else$3$endif$}
+\tableofcontents
+\newpage
+}
+$endif$
+
+% --- Liste des tables ---------------------------------------------------------
+$if(lot)$
+\listoftables
+$endif$
+
+% --- Liste des figures --------------------------------------------------------
+$if(lof)$
+\listoffigures
+\newpage
+$endif$
+
+% --- Corps du document --------------------------------------------------------
+$body$
+
+% --- Bibliographie ------------------------------------------------------------
+$if(biblatex)$
+\printbibliography[heading=bibintoc,title={Bibliographie}]
+$endif$
+
+\end{document}
